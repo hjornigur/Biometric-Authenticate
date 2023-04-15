@@ -11,6 +11,7 @@ import type {
     AuthenticatorDevice,
 } from '@simplewebauthn/typescript-types'
 import { isoUint8Array } from '@simplewebauthn/server/helpers'
+import { v4 as uuidv4 } from 'uuid'
 
 type UserModel = {
     id: string;
@@ -26,7 +27,6 @@ const rpID = 'localhost'
 // The URL at which registrations and authentications should occur
 const origin = `https://${rpID}:3000`
 
-
 @Injectable()
 export class AppService {
     db = {
@@ -39,6 +39,9 @@ export class AppService {
             },
         ] as UserModel[],
     }
+
+    // TODO expire challenges
+    challenges: { [key: string]: string } = {}
 
     /**
      * GenerateRegistrationOptions
@@ -72,7 +75,8 @@ export class AppService {
                 transports: authenticator.transports,
             })),
             authenticatorSelection: {
-                residentKey: 'discouraged',
+                residentKey: 'required',
+                userVerification: 'preferred',
             },
             // Support the two most common algorithms: ES256, and RS256
             supportedAlgorithmIDs: [-7, -257],
@@ -134,43 +138,34 @@ export class AppService {
     /**
      * GenerateAuthenticationOptions
      */
-    generateAuthenticationOptions({ username }: { username: string }) {
-        const index = this.db.users.findIndex(x => x.username === username)
-
-        if (index === -1)
-            throw new NotFoundException()
-
-        // Retrieve the user from the database after they've logged in
-        const user = this.db.users[index]
-
+    generateAuthenticationOptions() {
         const options = generateAuthenticationOptions({
             timeout: 60000,
-            // Require users to use a previously-registered authenticator
-            allowCredentials: user.authentificatorDevices.map(authenticator => ({
-                id: authenticator.credentialID,
-                type: 'public-key',
-                transports: authenticator.transports,
-            })),
             userVerification: 'preferred',
             rpID,
         })
 
-        // Remember the challenge for this user
-        this.db.users[index].currentChallenge = options.challenge
+        const uuid = uuidv4()
 
-        return options
+        // Store challenge
+        this.challenges[uuid] = options.challenge
+
+        return {
+            requestId: uuid,
+            options,
+        }
     }
 
-    async verifyAuthentication({ username, ...body }: AuthenticationResponseJSON & { username: string }) {
-        const index = this.db.users.findIndex(x => x.username === username)
+    async verifyAuthentication({ requestId, ...body }: AuthenticationResponseJSON & { requestId: string }) {
+        const bodyCredIDBuffer = Buffer.from(body.rawId, 'base64url')
+
+        const index = this.db.users.findIndex(usr => usr.authentificatorDevices.some(x => isoUint8Array.areEqual(x.credentialID, bodyCredIDBuffer)))
 
         if (index === -1)
             throw new NotFoundException()
 
         // Retrieve the user from the database after they've logged in
         const user = this.db.users[index]
-
-        const bodyCredIDBuffer = Buffer.from(body.rawId, 'base64url')
 
         const authenticatorIndex = user.authentificatorDevices.findIndex(x => isoUint8Array.areEqual(x.credentialID, bodyCredIDBuffer))
 
@@ -182,10 +177,10 @@ export class AppService {
         try {
             const {
                 verified,
-                authenticationInfo: { newCounter }
+                authenticationInfo: { newCounter },
             } = await verifyAuthenticationResponse({
                 response: body,
-                expectedChallenge: user.currentChallenge,
+                expectedChallenge: this.challenges[requestId],
                 expectedOrigin: origin,
                 expectedRPID: rpID,
                 authenticator,
@@ -197,11 +192,14 @@ export class AppService {
                 this.db.users[index].authentificatorDevices[authenticatorIndex].counter = newCounter
             }
 
-            // Update counter
-            this.db.users[index].currentChallenge = undefined
+            // Delete challenge
+            delete this.challenges[requestId]
 
             return { verified }
         } catch (error) {
+            // Delete challenge
+            delete this.challenges[requestId]
+
             console.error(error)
             throw new BadRequestException(error.message)
         }

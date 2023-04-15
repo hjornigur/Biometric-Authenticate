@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Redirect } from '@nestjs/common'
+import { Body, Controller, Get, Post } from '@nestjs/common'
 import { AppService } from './app.service'
 import type {
     RegistrationResponseJSON,
@@ -27,19 +27,15 @@ export class AppController {
 
     // @Public
     @Get('/authenticate/option')
-    generateAuthenticationOptions(
-        @Query('username') username: string
-    ) {
-        return this.appService.generateAuthenticationOptions({ username })
+    generateAuthenticationOptions() {
+        return this.appService.generateAuthenticationOptions()
     }
 
     // @Public
     @Post('/authenticate')
-    @Redirect('/authenticate/test')
     verifyAuthentications(
-        @Query('username') username: string,
-        @Body() body: AuthenticationResponseJSON
+        @Body() body: AuthenticationResponseJSON & { requestId: string }
     ) {
-        return this.appService.verifyAuthentication({ username, ...body })
+        return this.appService.verifyAuthentication(body)
     }
 }

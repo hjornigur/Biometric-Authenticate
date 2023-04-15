@@ -1,25 +1,8 @@
 import { startAuthentication, startRegistration, browserSupportsWebAuthn } from '@simplewebauthn/browser';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 function App() {
     const [message, setMessage] = useState('')
-    const [username, setUsername] = useState('')
-
-    // useEffect(() => {
-    //     (async () => {
-    //         const resp = await fetch(`/api/biometric/authenticate/option?username=example`);
-
-    //         let asseResp;
-    //         try {
-    //             // Pass the options to the authenticator and wait for a response
-    //             asseResp = await startAuthentication(await resp.json(), true);
-    //         } catch (error) {
-    //             // Some basic error handling
-    //             setMessage(JSON.stringify(error))
-    //             throw error;
-    //         }
-    //     })()
-    // }, [])
 
     const onRegister = useCallback(async () => {
         // Reset success/error messages
@@ -73,12 +56,14 @@ function App() {
 
         // GET authentication options from the endpoint that calls
         // @simplewebauthn/server -> generateAuthenticationOptions()
-        const resp = await fetch(`/api/biometric/authenticate/option?username=${username}`);
+        const resp = await fetch(`/api/biometric/authenticate/option`);
+
+        const optionJson = await resp.json()
 
         let asseResp;
         try {
             // Pass the options to the authenticator and wait for a response
-            asseResp = await startAuthentication(await resp.json());
+            asseResp = await startAuthentication(optionJson.options);
         } catch (error) {
             // Some basic error handling
             setMessage(JSON.stringify(error))
@@ -87,12 +72,12 @@ function App() {
 
         // POST the response to the endpoint that calls
         // @simplewebauthn/server -> verifyAuthenticationResponse()
-        const verificationResp = await fetch(`/api/biometric/authenticate?username=${username}`, {
+        const verificationResp = await fetch(`/api/biometric/authenticate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(asseResp),
+            body: JSON.stringify({ requestId: optionJson.requestId, ...asseResp }),
         });
 
         // Wait for the results of verification
@@ -106,7 +91,7 @@ function App() {
                 verificationJSON,
             )}</pre>`)
         }
-    }, [username])
+    }, [])
 
     return (
         <div className="App">
@@ -124,14 +109,6 @@ function App() {
             <br />
             <hr />
             <br />
-            <label>Username:</label>
-            <br />
-            <input
-                value={username}
-                name="username"
-                autoComplete="webauthn username"
-                onChange={({ target }) => setUsername(target.value)}
-            />
             <button
                 type="button"
                 onClick={onAuthentificate}
