@@ -1,0 +1,16 @@
+{
+    "name": "demo-biometric-authentificate",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "demo-biometric-authentificate_container",
+    "workspaceFolder": "/app_demo-biometric-authentificate",
+    "extensions": [
+        "gruntfuggly.todo-tree",
+        "sibiraj-s.vscode-scss-formatter",
+        "firefox-devtools.vscode-firefox-debug",
+        "msjsdiag.debugger-for-chrome",
+        "davidanson.vscode-markdownlint",
+        "dbaeumer.vscode-eslint",
+        "stylelint.vscode-stylelint",
+        "pflannery.vscode-versionlens"
+    ]
+}

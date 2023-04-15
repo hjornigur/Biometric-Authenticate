@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "😺 Nest",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/back",
+            "runtimeExecutable": "npm",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "runtimeArgs": [
+                "run-script",
+                "start:debug"
+            ]
+        },
+        {
+            "name": "⚛️ React",
+            "type": "chrome",
+            "request": "launch",
+            "url": "https://localhost:3000",
+            "webRoot": "${workspaceFolder}/front/src",
+            "preLaunchTask": "⚛️ React",
+            "postDebugTask": "terminate task",
+            "runtimeArgs": [
+                "--start-maximized",
+                "--auto-open-devtools-for-tabs"
+            ]
+        }
+    ]
+}
