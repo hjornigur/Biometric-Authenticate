@@ -1,19 +1,19 @@
 version: '3'
 services:
-  demo-biometric-authentificate_container:
+  demo-biometric-authenticate_container:
     build:
       context: ./
       dockerfile: ./Dockerfile
     stdin_open: true
     tty: true
     volumes:
-      - ../:/app_demo-biometric-authentificate:rw
+      - ../:/app_demo-biometric-authenticate:rw
     ports:
       - 5000:5000
       - 3000:3000
     networks:
-      - demo-biometric-authentificate_network
+      - demo-biometric-authenticate_network
 
 networks:
-  demo-biometric-authentificate_network:
+  demo-biometric-authenticate_network:
     driver: 'bridge'

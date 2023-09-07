@@ -1,8 +1,8 @@
 {
-    "name": "demo-biometric-authentificate",
+    "name": "demo-biometric-authenticate",
     "dockerComposeFile": "docker-compose.yml",
-    "service": "demo-biometric-authentificate_container",
-    "workspaceFolder": "/app_demo-biometric-authentificate",
+    "service": "demo-biometric-authenticate_container",
+    "workspaceFolder": "/app_demo-biometric-authenticate",
     "extensions": [
         "gruntfuggly.todo-tree",
         "sibiraj-s.vscode-scss-formatter",

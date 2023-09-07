@@ -9,14 +9,14 @@ import type {
 export class AppController {
     constructor(private readonly appService: AppService) { }
 
-    // @Authentificated
+    // @Authenticated
     @Get('/register/option')
     generateRegistrationOptions() {
         const username = 'example' // Get username via JWT token for example
         return this.appService.generateRegistrationOptions({ username })
     }
 
-    // @Authentificated
+    // @Authenticated
     @Post('/register')
     verifyRegistration(
         @Body() body: RegistrationResponseJSON

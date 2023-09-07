@@ -50,7 +50,7 @@ function App() {
         }
     }, [])
 
-    const onAuthentificate = useCallback(async () => {
+    const onAuthenticate = useCallback(async () => {
         // Reset success/error messages
         setMessage("")
 
@@ -111,9 +111,9 @@ function App() {
             <br />
             <button
                 type="button"
-                onClick={onAuthentificate}
+                onClick={onAuthenticate}
             >
-                Authentificate
+                Authenticate
             </button>
         </div>
     )
