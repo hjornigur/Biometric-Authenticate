@@ -2,6 +2,8 @@
 
 A basic authentication system with biometric in React and NestJs. 👆
 
+**This is a forked branch where the frontend is modified to match a different backend**
+
 Made with [SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn)
 
 - Branch `main` is an example for PasswordLess and UsernameLess authentication
