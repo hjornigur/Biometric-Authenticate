@@ -6,3 +6,9 @@ Made with [SimpleWebAuthn](https://github.com/MasterKale/SimpleWebAuthn)
 
 - Branch `main` is an example for PasswordLess and UsernameLess authentication
 - Branch `passwordless` is an example for PasswordLess and Username authentication
+
+## Launch frontend
+
+- `cd front`
+- `npm i`
+- `npm start`
