@@ -10,12 +10,13 @@ function App() {
 
         // GET registration options from the endpoint that calls
         // @simplewebauthn/server -> generateRegistrationOptions()
-        const resp = await fetch(`/api/biometric/register/option`);
+        const resp = await (await fetch(`/api/users/register/start?username=example`)).json();
+        console.warn(resp)
 
         let attResp;
         try {
             // Pass the options to the authenticator and wait for a response
-            attResp = await startRegistration(await resp.json());
+            attResp = await startRegistration(resp.options);
         } catch (error: any) {
             // Some basic error handling
             if (error.name === 'InvalidStateError') {
@@ -29,12 +30,12 @@ function App() {
 
         // POST the response to the endpoint that calls
         // @simplewebauthn/server -> verifyRegistrationResponse()
-        const verificationResp = await fetch(`/api/biometric/register`, {
+        const verificationResp = await fetch(`/api/users/register/complete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(attResp),
+            body: JSON.stringify({ ...attResp, requestId: resp.requestId }),
         });
 
         // Wait for the results of verification
@@ -56,7 +57,7 @@ function App() {
 
         // GET authentication options from the endpoint that calls
         // @simplewebauthn/server -> generateAuthenticationOptions()
-        const resp = await fetch(`/api/biometric/authenticate/option`);
+        const resp = await fetch(`/api/auth/start`);
 
         const optionJson = await resp.json()
 
@@ -72,13 +73,15 @@ function App() {
 
         // POST the response to the endpoint that calls
         // @simplewebauthn/server -> verifyAuthenticationResponse()
-        const verificationResp = await fetch(`/api/biometric/authenticate`, {
+        const verificationResp = await fetch(`/api/auth/complete`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ requestId: optionJson.requestId, ...asseResp }),
         });
+
+        console.warn(verificationResp)
 
         // Wait for the results of verification
         const verificationJSON = await verificationResp.json();
@@ -91,6 +94,17 @@ function App() {
                 verificationJSON,
             )}</pre>`)
         }
+    }, [])
+
+    const onGetMe = useCallback(async () => {
+        // Reset success/error messages
+        setMessage("");
+
+        const resp = await fetch(`/api/users/me`, { credentials: 'include' });
+
+        const respJson = await resp.json()
+
+        setMessage(JSON.stringify(respJson))
     }, [])
 
     return (
@@ -114,6 +128,17 @@ function App() {
                 onClick={onAuthenticate}
             >
                 Authenticate
+            </button>
+
+            <br />
+            <br />
+            <hr />
+            <br />
+            <button
+                type="button"
+                onClick={onGetMe}
+            >
+                Get my user info (protected route)
             </button>
         </div>
     )
