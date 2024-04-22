@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 function App() {
     const [message, setMessage] = useState('')
     const [access_token, setAccessToken] = useState('')
+    const [username, setUsername] = useState('')
 
     const onRegister = useCallback(async () => {
         // Reset success/error messages
@@ -11,7 +12,7 @@ function App() {
 
         // GET registration options from the endpoint that calls
         // @simplewebauthn/server -> generateRegistrationOptions()
-        const resp = await (await fetch(`/api/users/register/start?username=example`)).json();
+        const resp = await (await fetch(`/api/users/register/start?username=${username}`)).json();
         console.warn(resp)
 
         let attResp;
@@ -36,7 +37,7 @@ function App() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ ...attResp, requestId: resp.requestId }),
+            body: JSON.stringify({ registrationResponse: attResp, requestId: resp.requestId }),
         });
 
         // Wait for the results of verification
@@ -50,7 +51,7 @@ function App() {
                 verificationJSON,
             )}</pre>`)
         }
-    }, [])
+    }, [username])
 
     const onAuthenticate = useCallback(async () => {
         // Reset success/error messages
@@ -79,7 +80,7 @@ function App() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ requestId: optionJson.requestId, ...asseResp }),
+            body: JSON.stringify({ requestId: optionJson.requestId, authenticationResponse: asseResp }),
         });
 
         // Wait for the results of verification
@@ -117,11 +118,17 @@ function App() {
             <p>Access token: {access_token}</p>
             <hr />
             <br />
+            <input
+                value={username}
+                onChange={(event) => {
+                setUsername(event.target.value);
+                }}
+            />
             <button
                 type="button"
                 onClick={onRegister}
             >
-                Register as user "example"
+                Register as user "{username}"
             </button>
             <br />
             <br />
