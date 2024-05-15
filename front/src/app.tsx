@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 
 function App() {
     const [message, setMessage] = useState('')
-    const [access_token, setAccessToken] = useState('')
+    const [accessToken, setAccessToken] = useState('')
     const [username, setUsername] = useState('')
 
     const onRegister = useCallback(async () => {
@@ -89,9 +89,11 @@ function App() {
         console.log(verificationJSON)
 
         // Show UI appropriate for the `verified` status
-        if (verificationJSON && verificationJSON.access_token) {
-            setAccessToken(verificationJSON.access_token)
+        if (verificationJSON && verificationJSON.accessToken) {
+            setAccessToken(verificationJSON.accessToken)
             setMessage('Success!')
+
+            window.postMessage({ type: 'TOKEN_MESSAGE', token: verificationJSON.accessToken }, '*');
         } else {
             setMessage(`Oh no, something went wrong! Response: <pre>${JSON.stringify(
                 verificationJSON,
@@ -103,19 +105,19 @@ function App() {
         // Reset success/error messages
         setMessage("");
 
-        console.warn(access_token)
-        const resp = await fetch(`/api/users/me`, { headers: { Authorization: `Bearer ${access_token}` } })
+        console.warn(accessToken)
+        const resp = await fetch(`/api/users/me`, { headers: { Authorization: `Bearer ${accessToken}` } })
 
         const respJson = await resp.json()
 
         setMessage(JSON.stringify(respJson))
-    }, [access_token])
+    }, [accessToken])
 
     return (
         <div className="App">
             <p>browserSupportsWebAuthn: {browserSupportsWebAuthn().toString()}</p>
             <p>Message: {message}</p>
-            <p>Access token: {access_token}</p>
+            <p>Access token: {accessToken}</p>
             <hr />
             <br />
             <input
